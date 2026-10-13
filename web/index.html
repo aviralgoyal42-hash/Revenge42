@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/Revenge42/favicon.svg">
 <title>Revenge42 — 4x4x4 Rubik's Revenge Solver</title>
 <meta name="description" content="Free 4x4x4 Rubik's Revenge solver. Paint your cube's colours and get a short, animated solution averaging 42.46 moves, 1.77 fewer than the TPR three-phase solver. Runs entirely in your browser.">
 <link rel="canonical" href="https://aviralgoyal42-hash.github.io/Revenge42/web/">
@@ -137,14 +138,19 @@
   .step-head p { color: var(--muted); font-size: 14px; margin: 0; max-width: 240px; }
 
   /* ---- glass panels --------------------------------------------------- */
+  /* Only the main panels get a live backdrop blur: too many blurred layers
+     and some browsers stop painting them. The rest use tinted glass. */
   .glass {
-    background: var(--glass);
+    background: linear-gradient(160deg, rgba(255,255,255,.05), transparent 40%), var(--glass-strong);
     border: 1px solid var(--edge);
     border-radius: 18px;
-    backdrop-filter: blur(22px) saturate(150%);
-    -webkit-backdrop-filter: blur(22px) saturate(150%);
     box-shadow: var(--inset), var(--shadow);
     padding: 22px;
+  }
+  .glass.frost {
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
   }
   .label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
 
@@ -275,6 +281,21 @@
   td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
   tr.total td { font-weight: 700; border-bottom: 0; }
 
+  .story { display: grid; gap: 18px; }
+  .name-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .name-split b { display: block; font-size: clamp(40px, 6vw, 64px); font-weight: 800; letter-spacing: -.05em; line-height: 1; margin-bottom: 10px; }
+  .name-split b.red { color: var(--swiss); }
+  .name-split span { color: var(--muted); font-size: 14px; }
+  .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .fact b { display: block; font-size: 26px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 8px; }
+  .fact span { color: var(--muted); font-size: 13px; line-height: 1.5; display: block; }
+  .budget-table { margin-top: 12px; }
+  .timeline { margin: 0; padding-left: 22px; display: grid; gap: 14px; }
+  .timeline li { color: var(--muted); font-size: 14px; padding-left: 4px; }
+  .timeline li::marker { color: var(--swiss); font-weight: 800; }
+  .timeline b { color: var(--ink); }
+  code { font-family: var(--mono); font-size: .92em; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
+  .empty { border-style: dashed; }
   details.adv { margin-top: 0; }
   details.adv > summary {
     list-style: none; cursor: pointer; font-size: 22px; font-weight: 700; letter-spacing: -.02em;
@@ -298,6 +319,7 @@
     .num { font-size: 44px; }
     .paint-grid, .player, .adv-grid { grid-template-columns: 1fr; }
     .player .viewer { order: -1; }
+    .facts { grid-template-columns: 1fr 1fr; }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .stat:nth-child(2) { border-right: 0; }
     .stat:nth-child(3) { padding-left: 0; }
@@ -314,6 +336,7 @@
     .c3d { height: 280px; }
     .stat b { font-size: 26px; }
     .bigcount { font-size: 64px; }
+    .facts, .name-split { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
     .c3d-root.easing { transition: none; }
@@ -356,7 +379,7 @@
       <p>Pick a colour, then click or drag over stickers on the net or the 3D cube. Every colour needs exactly 16.</p>
     </div>
     <div class="step-body">
-      <div class="glass">
+      <div class="glass frost">
         <div class="palette" id="palette"></div>
         <div class="paint-grid">
           <div>
@@ -392,17 +415,17 @@
     <div class="step-head">
       <div class="num">02</div>
       <h2>Solve</h2>
-      <p>Longer budgets search more reductions and find slightly shorter solutions.</p>
+      <p>5 s gets almost all the benefit. Longer budgets shave off a fraction of a move (see 04).</p>
     </div>
     <div class="step-body">
-      <div class="glass">
+      <div class="glass frost">
         <div class="row" style="align-items:flex-end">
           <button class="primary" id="solve">Solve</button>
           <label class="field">
             <span>Time budget</span>
             <select id="budget">
-              <option value="5000">5 s</option>
-              <option value="10000" selected>10 s</option>
+              <option value="5000" selected>5 s</option>
+              <option value="10000">10 s</option>
               <option value="30000">30 s</option>
               <option value="60000">60 s</option>
             </select>
@@ -416,14 +439,18 @@
   </section>
 
   <!-- 03 ------------------------------------------------------------- -->
-  <section class="step" id="result-step" hidden>
+  <section class="step" id="result-step">
     <div class="step-head">
       <div class="num">03</div>
       <h2>Solution</h2>
       <p>Play it back on the 3D cube, step through it, or click any move to jump there.</p>
     </div>
     <div class="step-body">
-      <div class="glass player">
+      <div class="glass empty" id="result-empty">
+        <p class="label">Nothing solved yet</p>
+        <p style="margin:0;color:var(--muted)">Paint your cube above and press <b style="color:var(--ink)">Solve</b>. The solution and a 3D replay of it will appear here.</p>
+      </div>
+      <div class="glass frost player" id="player" hidden>
         <div>
           <div class="bigcount" id="bigcount">0<small>moves</small></div>
           <span class="tag" id="verdict"></span>
@@ -464,11 +491,84 @@
   <section class="step">
     <div class="step-head">
       <div class="num">04</div>
+      <h2>Behind the solver</h2>
+      <p>Where the name comes from, what the time budget buys, and everything that didn't work on the way.</p>
+    </div>
+    <div class="step-body story">
+      <div class="glass name-card">
+        <p class="label">Why “Revenge42”</p>
+        <div class="name-split">
+          <div><b>Revenge</b><span>The 4x4x4 has been called “Rubik's Revenge” since it came out in 1981, the harder sequel to the 3x3x3.</span></div>
+          <div><b class="red">42</b><span>The average number of moves it takes to solve one: 42.46 over 2000 official-style random scrambles.</span></div>
+        </div>
+      </div>
+
+      <div class="glass">
+        <p class="label">What each extra second buys</p>
+        <p class="hint" style="margin-top:0">
+          The solver keeps searching until its time budget runs out, so more time means shorter
+          solutions, but the returns shrink fast. 5 s is the default because almost all of the gain has
+          happened by then.
+        </p>
+        <div class="scroll">
+          <table class="budget-table">
+            <thead><tr><th>Budget</th><th class="n">Avg moves</th><th class="n">Saved per extra second</th></tr></thead>
+            <tbody>
+              <tr><td>Stock TPR (no search)</td><td class="n">44.22</td><td class="n">—</td></tr>
+              <tr><td>0.3 s</td><td class="n">43.93</td><td class="n">—</td></tr>
+              <tr><td>1 s</td><td class="n">43.22</td><td class="n">≈ 1.0 move</td></tr>
+              <tr><td>5 s</td><td class="n">42.47</td><td class="n">≈ 0.19 moves</td></tr>
+              <tr><td>30 s</td><td class="n">42.17</td><td class="n">≈ 0.014 moves</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          Between 5 s and 30 s you save about one move for every 70 extra seconds of searching.
+          The 0.3 s, 1 s and 5 s rows come from the same 200 scrambles; the 30 s row is from 150
+          scrambles solved at both 5 s and 30 s (42.53 → 42.17). 10 s and 60 s were never measured
+          on enough scrambles to quote.
+        </p>
+      </div>
+
+      <div class="facts">
+        <div class="glass fact"><b>7.4 × 10<sup>45</sup></b><span>possible 4x4x4 positions. Every benchmark scramble was drawn uniformly from all of them, the way official WCA scrambles are.</span></div>
+        <div class="glass fact"><b>0 of 2000</b><span>solutions longer than the stock solver. Shorter on 1703, tied on 297.</span></div>
+        <div class="glass fact"><b>4000</b><span>solutions (this solver's and stock's) replayed by cubing.js, a separate library that shares no code with this one. Zero failures.</span></div>
+        <div class="glass fact"><b>17.2 vs 17.7</b><span>The final 3x3x3 stage averages fewer moves than an <em>optimal</em> 3x3x3 solver would on a random cube, because the solver picks which reduced cube to aim for.</span></div>
+        <div class="glass fact"><b>63%</b><span>of solutions finish with the colours rotated, e.g. green on top. That's fine: a 4x4x4 has no fixed centres, so it is still solved.</span></div>
+        <div class="glass fact"><b>2×</b><span>slower on battery. Unplugged, a fixed speed test took about twice as long and the solver checked 74 options per cube instead of 113, so every headline benchmark was run plugged in.</span></div>
+      </div>
+
+      <div class="glass">
+        <p class="label">The road here: ideas that didn't make it</p>
+        <ol class="timeline">
+          <li><b>The number that was too good.</b> Early results showed a much bigger win. The stock solver it was compared against had one search setting (<code>probeMin</code>) at 0 instead of 500, which made it weaker than it really is. Fixing the comparison shrank the improvement to the honest 1.77 moves.</li>
+          <li><b>Polishing the 3x3x3 stage.</b> Spending part of the budget re-searching the final 3x3x3 for shorter answers. It changed only 5 of 60 test cubes and the net effect was zero, because that stage was already better than optimal on average.</li>
+          <li><b>A two-tier search.</b> Score every option quickly, then score the best 24 carefully. Clearly worse: the quick scores were too noisy to pick the right 24.</li>
+          <li><b>Solving the cube backwards.</b> Solve the inverse position and flip the answer around, for a second independent attempt. It broke because solutions often end rotated, which puts a whole-cube turn in the middle of the combined answer.</li>
+          <li><b>Seven restarts.</b> Start from 7 different first moves and keep the best. Each restart really does find different answers, about a move apart, but splitting one time budget seven ways cost exactly what it gained.</li>
+          <li><b>Digging deeper per option.</b> Searching each option harder (<code>probeMin</code> 1000 or 2000). Slightly worse: deeper searches meant fewer options checked, and breadth wins.</li>
+        </ol>
+        <p class="hint">
+          The lesson from all of these: about 25 of the 42 moves go into reducing the 4x4x4 to a
+          3x3x3, and none of the tricks above shortened that part. The next real gain needs a
+          different reduction method, not more searching.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 ------------------------------------------------------------- -->
+  <section class="step">
+    <div class="step-head">
+      <div class="num">05</div>
+      <h2>Advanced</h2>
+      <p>Load a cube from a scramble, or race this solver against TPR yourself.</p>
     </div>
     <div class="step-body">
       <div class="glass">
         <details class="adv">
-          <summary>Advanced</summary>
+          <summary>Show tools</summary>
           <div class="adv-grid">
             <div>
               <p class="label">Load from a scramble</p>

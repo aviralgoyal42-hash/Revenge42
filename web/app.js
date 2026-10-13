@@ -183,9 +183,9 @@ document.addEventListener("keydown", (e) => {
   if (e.target.matches("textarea, input, select")) return;
   const k = Number(e.key);
   if (k >= 1 && k <= 6) setBrush(ORDER[k - 1]);
-  if (e.key === " " && !$("result-step").hidden) { e.preventDefault(); togglePlay(); }
-  if (e.key === "ArrowRight" && !$("result-step").hidden) stepTo(pos + 1, true);
-  if (e.key === "ArrowLeft" && !$("result-step").hidden) stepTo(pos - 1);
+  if (e.key === " " && !$("player").hidden) { e.preventDefault(); togglePlay(); }
+  if (e.key === "ArrowRight" && !$("player").hidden) stepTo(pos + 1, true);
+  if (e.key === "ArrowLeft" && !$("player").hidden) stepTo(pos - 1);
 });
 
 // ------------------------------------------------------------------ status
@@ -304,7 +304,8 @@ let playing = false;
 let animating = false;
 
 function showResult(m) {
-  $("result-step").hidden = false;
+  $("result-empty").hidden = true;
+  $("player").hidden = false;
   sol = C.tokens(m.solution);
   stepStates = [m.state];
   for (const t of sol) stepStates.push(C.applyMove(stepStates[stepStates.length - 1], t));
