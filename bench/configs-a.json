@@ -1,0 +1,8 @@
+[
+  ["default", {}],
+  ["maxLen3 15", { "maxLen3": 15 }],
+  ["maxLen3 17", { "maxLen3": 17 }],
+  ["maxLen3 15 + extraLen 6", { "maxLen3": 15, "extraLen": 6 }],
+  ["phase2Sols 300", { "phase2Sols": 300 }],
+  ["phase2Sols 300 + maxLen3 15", { "phase2Sols": 300, "maxLen3": 15 }]
+]

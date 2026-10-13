@@ -1,0 +1,94 @@
+{
+  "tag": "2000",
+  "n": 2000,
+  "verification": {
+    "tool": "cubing.js, independent of the solver",
+    "solverSolutionsFailed": 0,
+    "baselineSolutionsFailed": 0,
+    "tokensOutsideMoveSet": 0,
+    "csvDisagreesWithSolutionStrings": 0
+  },
+  "finishOrientation": {
+    "note": "solved in any of the 24 orientations is solved; exact means it also ended in the starting orientation",
+    "solverExact": 744,
+    "solverRotated": 1256,
+    "baselineExact": 1304,
+    "baselineRotated": 696
+  },
+  "metric": "OBTM: 36 generators, wide turns and half turns each count as 1, no slice moves",
+  "solver": {
+    "avg": 42.4575,
+    "sd": 1.0444,
+    "se": 0.0234,
+    "ci95": [
+      42.412,
+      42.503
+    ],
+    "best": 38,
+    "worst": 45,
+    "hist": {
+      "38": 2,
+      "39": 9,
+      "40": 64,
+      "41": 257,
+      "42": 640,
+      "43": 733,
+      "44": 283,
+      "45": 12
+    }
+  },
+  "baseline": {
+    "avg": 44.224,
+    "sd": 1.254,
+    "best": 39,
+    "worst": 48,
+    "hist": {
+      "39": 3,
+      "40": 8,
+      "41": 29,
+      "42": 130,
+      "43": 343,
+      "44": 634,
+      "45": 554,
+      "46": 267,
+      "47": 31,
+      "48": 1
+    }
+  },
+  "pairedImprovement": {
+    "mean": 1.7665,
+    "sd": 1.1754,
+    "se": 0.0263,
+    "ci95": [
+      1.715,
+      1.818
+    ],
+    "shorter": 1703,
+    "equal": 297,
+    "longer": 0,
+    "hist": {
+      "0": 297,
+      "1": 555,
+      "2": 646,
+      "3": 357,
+      "4": 118,
+      "5": 19,
+      "6": 8
+    }
+  },
+  "vsPublished4439": {
+    "note": "44.39 is cs0x7f's published mean for the Java TPR solver, not a per-solve threshold",
+    "solverSolvesAbove": 12,
+    "baselineSolvesAbove": 853
+  },
+  "timing": {
+    "meanMs": 4291,
+    "worstMs": 6907,
+    "overBudget5000ms": 5
+  },
+  "breakdown": {
+    "reductionMoves": 25.189,
+    "moves333": 17.281,
+    "reductionsScreened": 105
+  }
+}

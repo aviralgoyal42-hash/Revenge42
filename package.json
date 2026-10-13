@@ -1,0 +1,16 @@
+{
+  "name": "revenge42",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Client-side 4x4x4 solver: three-phase reduction with search over many reductions, then Kociemba two-phase",
+  "license": "GPL-3.0",
+  "scripts": {
+    "verify": "node bench/verify.js 40 3000",
+    "bench": "node bench/run.js 30000 20",
+    "rng": "node bench/rng.js 200000 200",
+    "analyze": "node bench/analyze.mjs"
+  },
+  "devDependencies": {
+    "cubing": "^0.63.4"
+  }
+}

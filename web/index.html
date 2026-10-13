@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revenge42</title>
+<style>
+  :root {
+    --bg: #fbfaf8;
+    --panel: #ffffff;
+    --ink: #1c1b19;
+    --muted: #6b675f;
+    --line: #e3ded6;
+    --accent: #b4532a;
+    --ok: #2f7a4a;
+    --bad: #b3261e;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16151a; --panel: #1e1d23; --ink: #eceaf0; --muted: #a09aa8;
+      --line: #322f3a; --accent: #e08a5e; --ok: #6fcf97; --bad: #f2857c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 32px 20px 72px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 28px; font-size: 14px; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px; margin-bottom: 18px;
+  }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  textarea, input, select {
+    width: 100%; font-family: var(--mono); font-size: 13px;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 6px; padding: 10px;
+  }
+  textarea { min-height: 68px; resize: vertical; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-top: 14px; }
+  .row > div { flex: 0 0 auto; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: #fff; border: 0;
+    border-radius: 6px; padding: 10px 18px;
+  }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button:disabled { opacity: 0.45; cursor: default; }
+  .status { font-size: 13px; color: var(--muted); margin-top: 12px; min-height: 20px; }
+  .solution {
+    font-family: var(--mono); font-size: 14px; line-height: 1.9;
+    word-spacing: 3px; overflow-x: auto; margin: 0;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  .tag { font-size: 12px; font-weight: 600; }
+  .tag.ok { color: var(--ok); }
+  .tag.bad { color: var(--bad); }
+  .scroll { overflow-x: auto; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Revenge42</h1>
+  <p class="sub">
+    Client-side 4x4x4 solver. Three-phase reduction with search over many
+    reductions, then Kociemba two-phase for the resulting 3x3x3. Nothing
+    leaves the browser.
+  </p>
+
+  <div class="panel">
+    <label for="scramble">Scramble</label>
+    <textarea id="scramble" spellcheck="false"
+      placeholder="e.g. R2 L2 U' F2 Rw2 Fw2 R Uw2 …"></textarea>
+    <div class="hint">
+      Outer turns U R F D L B and wide turns Uw Rw Fw Dw Lw Bw, each plain, 2 or '.
+      Leave empty to solve a random state.
+    </div>
+    <div class="row">
+      <div><button id="solve">Solve</button></div>
+      <div><button id="random" class="ghost">Random scramble</button></div>
+      <div>
+        <label for="budget">Time budget</label>
+        <select id="budget">
+          <option value="5000">5 s</option>
+          <option value="10000">10 s</option>
+          <option value="30000" selected>30 s</option>
+          <option value="60000">60 s</option>
+        </select>
+      </div>
+    </div>
+    <div class="hint">
+      Measured over 150 scrambles solved at both budgets, the average was 42.527
+      moves at 5 s and 42.167 at 30 s. Longer searches do find shorter solutions,
+      though the return is well under a move.
+    </div>
+    <div class="status" id="status">Loading solver…</div>
+  </div>
+
+  <div class="panel" id="result-panel" hidden>
+    <label>Solution <span id="verdict" class="tag"></span></label>
+    <pre class="solution" id="solution"></pre>
+    <div class="scroll">
+      <table id="breakdown">
+        <thead>
+          <tr><th>stage</th><th class="num">moves</th><th>notes</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <label>Benchmark</label>
+    <div class="row">
+      <div><button id="bench" class="ghost">Run benchmark</button></div>
+      <div>
+        <label for="bench-n">Scrambles</label>
+        <select id="bench-n">
+          <option value="20">20</option>
+          <option value="30" selected>30</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+      <div>
+        <label for="bench-budget">Budget each</label>
+        <select id="bench-budget">
+          <option value="5000" selected>5 s</option>
+          <option value="10000">10 s</option>
+          <option value="30000">30 s</option>
+        </select>
+      </div>
+    </div>
+    <div class="status" id="bench-status"></div>
+    <div class="scroll">
+      <table id="bench-table" hidden>
+        <thead>
+          <tr>
+            <th>solver</th><th class="num">avg</th><th class="num">best</th>
+            <th class="num">worst</th><th class="num">avg time</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

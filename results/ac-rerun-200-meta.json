@@ -1,0 +1,18 @@
+{
+  "power": "mains, charging from 12 percent",
+  "budgetMs": 5000,
+  "calibrations": [
+    {
+      "ms": 2860,
+      "checksum": 356,
+      "at": 4
+    },
+    {
+      "ms": 1553,
+      "checksum": 356,
+      "at": 865
+    }
+  ],
+  "scrambleSource": "results/scrambles-2000.txt lines 1-200",
+  "wallMs": 864917
+}

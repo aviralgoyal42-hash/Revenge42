@@ -1,0 +1,22 @@
+{
+  "power": "on battery, unplugged, 95 percent at launch",
+  "calibrations": [
+    {
+      "ms": 3418,
+      "checksum": 356,
+      "atS": 5
+    },
+    {
+      "ms": 2765,
+      "checksum": 356,
+      "atS": 1127
+    }
+  ],
+  "budgetsMs": [
+    300,
+    1000,
+    5000
+  ],
+  "scrambleSource": "results/scrambles-2000.txt lines 1-200",
+  "wallMs": 1126564
+}
