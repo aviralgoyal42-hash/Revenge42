@@ -3,155 +3,517 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Revenge42</title>
+<title>Revenge42 — 4x4x4 Rubik's Revenge Solver</title>
+<meta name="description" content="Free 4x4x4 Rubik's Revenge solver. Paint your cube's colours and get a short, animated solution averaging 42.46 moves, 1.77 fewer than the TPR three-phase solver. Runs entirely in your browser.">
+<link rel="canonical" href="https://aviralgoyal42-hash.github.io/Revenge42/web/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#07080b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Revenge42 — 4x4x4 Rubik's Revenge Solver">
+<meta property="og:description" content="Paint your 4x4x4 and get a solution averaging 42.46 moves, with 3D playback. Runs entirely in your browser.">
+<meta property="og:url" content="https://aviralgoyal42-hash.github.io/Revenge42/web/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Revenge42",
+  "url": "https://aviralgoyal42-hash.github.io/Revenge42/web/",
+  "description": "A 4x4x4 Rubik's Revenge solver that searches over many reductions and keeps the shortest total solution, averaging 42.46 moves over 2000 WCA random states.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any (web browser)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "aviralgoyal42" },
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html"
+}
+</script>
 <style>
   :root {
-    --bg: #fbfaf8;
-    --panel: #ffffff;
-    --ink: #1c1b19;
-    --muted: #6b675f;
-    --line: #e3ded6;
-    --accent: #b4532a;
-    --ok: #2f7a4a;
-    --bad: #b3261e;
+    --bg: #07080b;
+    --ink: #f3f1ec;
+    --muted: #9b98a3;
+    --faint: #5d5b66;
+    --glass: rgba(22, 24, 32, 0.52);
+    --glass-strong: rgba(18, 20, 27, 0.72);
+    --edge: rgba(255, 255, 255, 0.13);
+    --edge-hi: rgba(255, 255, 255, 0.28);
+    --swiss: #ff3b2f;
+    --ok: #3ddc84;
+    --bad: #ff6b5e;
+    --sans: "Helvetica Neue", Helvetica, Arial, "Segoe UI", system-ui, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --cU: #f5f4ee; --cR: #e0263a; --cF: #19b45a; --cD: #ffd21f; --cL: #ff7a1a; --cB: #1f5fff;
+    --cBlank: #2b2e38;
+    --lede: #cfccd6;
+    --field: rgba(0,0,0,.35);
+    --btn: rgba(255,255,255,.06);
+    --btn-hover: rgba(255,255,255,.13);
+    --chip: rgba(255,255,255,.04);
+    --track: rgba(255,255,255,.08);
+    --veil-a: rgba(7,8,11,.55);
+    --veil-b: rgba(7,8,11,.35);
+    --veil-c: rgba(7,8,11,.86);
+    --shadow: 0 30px 60px -30px rgba(0,0,0,.8);
+    --inset: inset 0 1px 0 rgba(255,255,255,.08);
+    --glass-op: 1;
+    color-scheme: dark;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #16151a; --panel: #1e1d23; --ink: #eceaf0; --muted: #a09aa8;
-      --line: #322f3a; --accent: #e08a5e; --ok: #6fcf97; --bad: #f2857c;
-    }
+  :root[data-theme="light"] {
+    --bg: #ece8df;
+    --ink: #121216;
+    --muted: #55525c;
+    --faint: #8a8692;
+    --glass: rgba(255, 255, 255, 0.58);
+    --glass-strong: rgba(255, 255, 255, 0.78);
+    --edge: rgba(20, 20, 30, 0.12);
+    --edge-hi: rgba(20, 20, 30, 0.24);
+    --swiss: #e3261b;
+    --ok: #13894b;
+    --bad: #c62a1d;
+    --lede: #34323a;
+    --field: rgba(255,255,255,.7);
+    --btn: rgba(255,255,255,.55);
+    --btn-hover: rgba(255,255,255,.9);
+    --chip: rgba(20,20,30,.05);
+    --track: rgba(20,20,30,.1);
+    --veil-a: rgba(236,232,223,.5);
+    --veil-b: rgba(236,232,223,.45);
+    --veil-c: rgba(236,232,223,.88);
+    --shadow: 0 30px 60px -34px rgba(40,30,20,.35);
+    --inset: inset 0 1px 0 rgba(255,255,255,.7);
+    color-scheme: light;
   }
   * { box-sizing: border-box; }
+  html { background: var(--bg); }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0; color: var(--ink); background: var(--bg);
+    font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 940px; margin: 0 auto; padding: 32px 20px 72px; }
-  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
-  .sub { color: var(--muted); margin: 0 0 28px; font-size: 14px; }
-  .panel {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 10px; padding: 20px; margin-bottom: 18px;
+
+  /* ---- stained glass backdrop ---------------------------------------- */
+  #glass-bg { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; }
+  .veil {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(1200px 700px at 78% 8%, transparent 0, var(--veil-a) 60%),
+      linear-gradient(180deg, var(--veil-b) 0, var(--veil-c) 70%);
   }
-  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  textarea, input, select {
-    width: 100%; font-family: var(--mono); font-size: 13px;
-    background: var(--bg); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 6px; padding: 10px;
+
+  /* ---- Swiss grid ----------------------------------------------------- */
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 1180px; margin: 0 auto; padding: 40px 24px 96px;
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px;
   }
-  textarea { min-height: 68px; resize: vertical; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-top: 14px; }
-  .row > div { flex: 0 0 auto; }
+  .full { grid-column: 1 / -1; }
+
+  header.hero { grid-column: 1 / -1; padding: 24px 0 40px; border-bottom: 1px solid var(--edge); position: relative; }
+  .theme-toggle { position: absolute; top: 16px; right: 0; display: inline-flex; gap: 8px; align-items: center; padding: 8px 14px; font-size: 13px; }
+  .theme-toggle svg { width: 16px; height: 16px; }
+  .kicker {
+    font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+    display: flex; gap: 14px; align-items: center;
+  }
+  .kicker::before { content: ""; width: 28px; height: 3px; background: var(--swiss); }
+  h1 {
+    font-size: clamp(56px, 11vw, 148px); line-height: .86; letter-spacing: -.055em;
+    font-weight: 800; margin: 22px 0 18px;
+  }
+  h1 span { color: var(--swiss); }
+  .lede { max-width: 560px; color: var(--lede); font-size: 18px; line-height: 1.45; margin: 0; }
+
+  .stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--edge); }
+  .stat { padding: 22px 20px 22px 0; border-right: 1px solid var(--edge); }
+  .stat + .stat { padding-left: 20px; }
+  .stat:last-child { border-right: 0; }
+  .stat b { display: block; font-size: 34px; letter-spacing: -.03em; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat small { color: var(--muted); font-size: 12px; letter-spacing: .02em; }
+
+  section.step { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); column-gap: 24px; padding-top: 56px; }
+  .step-head { grid-column: 1 / span 3; }
+  .step-body { grid-column: 4 / -1; min-width: 0; }
+  .num { font-size: 64px; font-weight: 800; line-height: .9; letter-spacing: -.05em; color: transparent; -webkit-text-stroke: 1.5px var(--edge-hi); }
+  .step-head h2 { font-size: 22px; letter-spacing: -.02em; margin: 14px 0 8px; font-weight: 700; }
+  .step-head p { color: var(--muted); font-size: 14px; margin: 0; max-width: 240px; }
+
+  /* ---- glass panels --------------------------------------------------- */
+  .glass {
+    background: var(--glass);
+    border: 1px solid var(--edge);
+    border-radius: 18px;
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    box-shadow: var(--inset), var(--shadow);
+    padding: 22px;
+  }
+  .label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+
+  /* ---- painter ------------------------------------------------------- */
+  .paint-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; }
+  .palette { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .swatch {
+    position: relative; width: 58px; height: 44px; border-radius: 10px; cursor: pointer;
+    border: 2px solid rgba(0,0,0,.6); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+    padding: 0; display: flex; align-items: flex-end; justify-content: flex-end;
+  }
+  .swatch .count {
+    font: 700 10px/1 var(--mono); padding: 3px 4px; margin: 3px; border-radius: 4px;
+    background: rgba(0,0,0,.55); color: #fff;
+  }
+  .swatch .count.full { color: var(--ok); }
+  .swatch .count.over { color: var(--bad); }
+  .swatch.active { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .swatch kbd { position: absolute; left: 5px; top: 4px; font: 700 10px var(--mono); color: rgba(0,0,0,.55); }
+  .swatch.dark kbd { color: rgba(255,255,255,.7); }
+
+  .net {
+    display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 3px;
+    width: 100%; max-width: 560px; user-select: none; touch-action: none;
+  }
+  .net .cell {
+    aspect-ratio: 1; border-radius: 3px; cursor: crosshair;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .net .cell.blank {
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.06) 0 3px, transparent 3px 6px) !important;
+  }
+  .net .gap { aspect-ratio: 1; }
+  .net-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 10px; font: 600 10px var(--mono); color: var(--faint); letter-spacing: .08em; }
+
+  .viewer { display: flex; flex-direction: column; align-items: center; }
+  .c3d { width: 100%; height: 340px; display: flex; align-items: center; justify-content: center; }
+  .c3d-scene { width: 100%; height: 100%; perspective: 1100px; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; }
+  .c3d-scene:active { cursor: grabbing; }
+  .c3d-root { position: relative; width: 0; height: 0; transform-style: preserve-3d; }
+  .c3d-root.easing { transition: transform .3s ease; }
+  .c3d-cubie { position: absolute; transform-style: preserve-3d; left: -22px; top: -22px; width: 44px; height: 44px; }
+  .c3d-face, .c3d-sticker { position: absolute; inset: 0; backface-visibility: hidden; }
+  .c3d-face { background: #050507; }
+  .c3d-sticker {
+    inset: 3px; border-radius: 6px; cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.35), inset 0 6px 10px -6px rgba(255,255,255,.55);
+  }
+  .c3d-sticker.blank { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.08) 0 3px, transparent 3px 6px) !important; }
+  .orbit { display: flex; gap: 8px; margin-top: 6px; }
+
+  .hint { color: var(--muted); font-size: 13px; margin: 14px 0 0; }
+  .hint b { color: var(--ink); font-weight: 600; }
+
+  /* ---- controls ------------------------------------------------------ */
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button, select, textarea {
+    font: inherit; color: var(--ink);
+  }
   button {
-    font: inherit; font-weight: 600; cursor: pointer;
-    background: var(--accent); color: #fff; border: 0;
-    border-radius: 6px; padding: 10px 18px;
+    font-weight: 600; font-size: 14px; cursor: pointer; border-radius: 999px;
+    padding: 10px 18px; border: 1px solid var(--edge-hi);
+    background: var(--btn);
+    transition: background .15s, border-color .15s, transform .1s;
   }
-  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-  button:disabled { opacity: 0.45; cursor: default; }
-  .status { font-size: 13px; color: var(--muted); margin-top: 12px; min-height: 20px; }
-  .solution {
-    font-family: var(--mono); font-size: 14px; line-height: 1.9;
-    word-spacing: 3px; overflow-x: auto; margin: 0;
+  button:hover:not(:disabled) { background: var(--btn-hover); }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button.primary {
+    background: var(--swiss); border-color: var(--swiss); color: #fff; padding: 14px 30px; font-size: 16px;
+    box-shadow: 0 10px 30px -10px rgba(255,59,47,.7);
   }
-  table { border-collapse: collapse; width: 100%; font-size: 13px; }
-  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
-  th { color: var(--muted); font-weight: 600; }
-  td.num, th.num { text-align: right; font-family: var(--mono); }
-  .tag { font-size: 12px; font-weight: 600; }
-  .tag.ok { color: var(--ok); }
-  .tag.bad { color: var(--bad); }
+  button.primary:hover:not(:disabled) { background: #ff5247; }
+  button.icon { width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+  button:disabled { opacity: .38; cursor: default; }
+  select {
+    background: var(--field); border: 1px solid var(--edge-hi); border-radius: 999px; padding: 10px 14px;
+  }
+  textarea {
+    width: 100%; min-height: 64px; resize: vertical; font-family: var(--mono); font-size: 13px;
+    background: var(--field); border: 1px solid var(--edge-hi); border-radius: 12px; padding: 12px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field > span { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+  .status { font-size: 14px; color: var(--muted); margin-top: 16px; min-height: 22px; }
+  .status.err { color: var(--bad); }
+  .problems { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+  .problems li {
+    border-left: 3px solid var(--bad); padding: 10px 12px; border-radius: 0 10px 10px 0;
+    background: color-mix(in srgb, var(--bad) 10%, transparent); font-size: 14px; line-height: 1.45;
+  }
+  .problems li b { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--bad); margin-bottom: 2px; }
+  .problems li button { display: block; margin-top: 8px; padding: 5px 12px; font-size: 12px; }
+  .diag .cell:not(.bad), .diag .c3d-sticker:not(.bad) { opacity: .22; filter: saturate(.4); }
+  .diag.has-focus .cell.bad:not(.focus), .diag.has-focus .c3d-sticker.bad:not(.focus) { opacity: .45; }
+  .net .cell.bad, .c3d-sticker.bad { box-shadow: 0 0 0 3px var(--bad), 0 0 14px 2px var(--bad); animation: pulse 1.2s ease-in-out infinite; }
+  .net .cell.bad { position: relative; z-index: 1; }
+  .net .cell.focus, .c3d-sticker.focus { box-shadow: 0 0 0 3px var(--ink), 0 0 18px 4px var(--bad); }
+  @keyframes pulse { 50% { filter: brightness(1.35); } }
+  .status.good { color: var(--ok); }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--edge-hi); border-top-color: var(--swiss); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -1px; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .meter { height: 3px; background: var(--track); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--swiss); }
+
+  /* ---- solution player ----------------------------------------------- */
+  .player { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+  .bigcount { font-size: 88px; font-weight: 800; letter-spacing: -.06em; line-height: .9; }
+  .bigcount small { font-size: 16px; letter-spacing: 0; color: var(--muted); font-weight: 600; margin-left: 8px; }
+  .tag { display: inline-block; font: 700 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; margin-top: 10px; }
+  .tag.ok { color: var(--ok); background: rgba(61,220,132,.12); }
+  .tag.bad { color: var(--bad); background: rgba(255,107,94,.12); }
+  .moves { display: flex; flex-wrap: wrap; gap: 4px; margin: 16px 0 0; font: 14px var(--mono); }
+  .moves button {
+    font: inherit; padding: 4px 7px; border-radius: 6px; min-width: 38px; border-color: transparent; background: var(--chip);
+  }
+  .moves button.done { color: var(--muted); }
+  .moves button.cur { background: var(--swiss); color: #fff; }
+  .moves .sep { width: 100%; height: 0; }
+  .moves .stage { width: 100%; font: 700 10px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin-top: 8px; }
+  .transport { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .progress { width: 100%; margin-top: 12px; accent-color: var(--swiss); }
+  .counter { font: 13px var(--mono); color: var(--muted); text-align: center; margin-top: 6px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 18px; }
+  th, td { text-align: left; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--edge); }
+  th { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  tr.total td { font-weight: 700; border-bottom: 0; }
+
+  details.adv { margin-top: 0; }
+  details.adv > summary {
+    list-style: none; cursor: pointer; font-size: 22px; font-weight: 700; letter-spacing: -.02em;
+    display: flex; align-items: center; gap: 12px;
+  }
+  details.adv > summary::-webkit-details-marker { display: none; }
+  details.adv > summary::after { content: "+"; color: var(--swiss); font-size: 26px; font-weight: 400; }
+  details.adv[open] > summary::after { content: "−"; }
+  .adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+
+  footer { grid-column: 1 / -1; margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--edge); color: var(--faint); font-size: 12px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer a { color: var(--muted); }
+
   .scroll { overflow-x: auto; }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  [hidden] { display: none !important; }
+
+  @media (max-width: 920px) {
+    .step-head, .step-body { grid-column: 1 / -1; }
+    .step-head { margin-bottom: 18px; }
+    .step-head p { max-width: none; }
+    .num { font-size: 44px; }
+    .paint-grid, .player, .adv-grid { grid-template-columns: 1fr; }
+    .player .viewer { order: -1; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(2) { border-right: 0; }
+    .stat:nth-child(3) { padding-left: 0; }
+    .stat:nth-child(n+3) { border-top: 1px solid var(--edge); }
+  }
+  @media (max-width: 520px) {
+    .wrap { padding: 24px 16px 72px; column-gap: 0; }
+    .kicker { padding-right: 96px; line-height: 1.5; }
+    .theme-toggle { top: 18px; padding: 7px 12px; }
+    .glass { padding: 16px; border-radius: 14px; }
+    .palette { gap: 6px; flex-wrap: nowrap; }
+    .swatch { flex: 1 1 0; width: auto; min-width: 0; height: 40px; }
+    .swatch .count { font-size: 9px; padding: 2px 3px; }
+    .c3d { height: 280px; }
+    .stat b { font-size: 26px; }
+    .bigcount { font-size: 64px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .c3d-root.easing { transition: none; }
+    .net .cell.bad, .c3d-sticker.bad { animation: none; }
+  }
 </style>
 </head>
 <body>
+<script>try { if (localStorage.getItem("r42-theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+<svg id="glass-bg" aria-hidden="true"></svg>
+<div class="veil"></div>
+
+<noscript><p style="position:relative;z-index:2;max-width:640px;margin:24px auto;padding:0 16px">Revenge42 needs JavaScript to paint and solve the cube, because the whole solver runs in your browser.</p></noscript>
 <div class="wrap">
-  <h1>Revenge42</h1>
-  <p class="sub">
-    Client-side 4x4x4 solver. Three-phase reduction with search over many
-    reductions, then Kociemba two-phase for the resulting 3x3x3. Nothing
-    leaves the browser.
-  </p>
+  <header class="hero">
+    <button class="theme-toggle" id="theme-toggle" aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path id="theme-icon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <span id="theme-label">Dark</span>
+    </button>
+    <div class="kicker">4x4x4 Rubik's Revenge solver</div>
+    <h1>Revenge<span>42</span></h1>
+    <p class="lede">
+      Paint your cube, press solve. It searches over many possible reductions and keeps
+      the one with the shortest total solution, entirely in your browser.
+    </p>
+  </header>
 
-  <div class="panel">
-    <label for="scramble">Scramble</label>
-    <textarea id="scramble" spellcheck="false"
-      placeholder="e.g. R2 L2 U' F2 Rw2 Fw2 R Uw2 …"></textarea>
-    <div class="hint">
-      Outer turns U R F D L B and wide turns Uw Rw Fw Dw Lw Bw, each plain, 2 or '.
-      Leave empty to solve a random state.
-    </div>
-    <div class="row">
-      <div><button id="solve">Solve</button></div>
-      <div><button id="random" class="ghost">Random scramble</button></div>
-      <div>
-        <label for="budget">Time budget</label>
-        <select id="budget">
-          <option value="5000">5 s</option>
-          <option value="10000">10 s</option>
-          <option value="30000" selected>30 s</option>
-          <option value="60000">60 s</option>
-        </select>
-      </div>
-    </div>
-    <div class="hint">
-      Measured over 150 scrambles solved at both budgets, the average was 42.527
-      moves at 5 s and 42.167 at 30 s. Longer searches do find shorter solutions,
-      though the return is well under a move.
-    </div>
-    <div class="status" id="status">Loading solver…</div>
+  <div class="stats">
+    <div class="stat"><b>42.46</b><small>average moves, 2000 WCA random states</small></div>
+    <div class="stat"><b>−1.77</b><small>moves vs the TPR three-phase solver</small></div>
+    <div class="stat"><b>0</b><small>longer than TPR, out of 2000</small></div>
+    <div class="stat"><b>100%</b><small>local. Nothing leaves your browser</small></div>
   </div>
 
-  <div class="panel" id="result-panel" hidden>
-    <label>Solution <span id="verdict" class="tag"></span></label>
-    <pre class="solution" id="solution"></pre>
-    <div class="scroll">
-      <table id="breakdown">
-        <thead>
-          <tr><th>stage</th><th class="num">moves</th><th>notes</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+  <!-- 01 ------------------------------------------------------------- -->
+  <section class="step">
+    <div class="step-head">
+      <div class="num">01</div>
+      <h2>Paint your cube</h2>
+      <p>Pick a colour, then click or drag over stickers on the net or the 3D cube. Every colour needs exactly 16.</p>
     </div>
-  </div>
+    <div class="step-body">
+      <div class="glass">
+        <div class="palette" id="palette"></div>
+        <div class="paint-grid">
+          <div>
+            <p class="label">Net</p>
+            <div class="net" id="net"></div>
+          </div>
+          <div class="viewer">
+            <p class="label" style="align-self:flex-start">3D · drag to turn</p>
+            <div id="paint3d"></div>
+            <div class="orbit">
+              <button class="icon" id="orb-left" title="Turn view left" aria-label="Turn view left">←</button>
+              <button class="icon" id="orb-up" title="Tilt view" aria-label="Tilt view">↕</button>
+              <button class="icon" id="orb-right" title="Turn view right" aria-label="Turn view right">→</button>
+            </div>
+          </div>
+        </div>
+        <p class="hint">
+          Hold the cube with any face towards you. Paint the face you see as <b>F</b>,
+          the top as <b>U</b>, and so on round the net. Uses the standard colour scheme
+          (white opposite yellow, green opposite blue, red opposite orange).
+        </p>
+        <div class="row" style="margin-top:16px">
+          <button id="fill-solved">Solved</button>
+          <button id="fill-clear">Clear all</button>
+          <button id="fill-random">Random state</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <div class="panel">
-    <label>Benchmark</label>
-    <div class="row">
-      <div><button id="bench" class="ghost">Run benchmark</button></div>
-      <div>
-        <label for="bench-n">Scrambles</label>
-        <select id="bench-n">
-          <option value="20">20</option>
-          <option value="30" selected>30</option>
-          <option value="50">50</option>
-        </select>
-      </div>
-      <div>
-        <label for="bench-budget">Budget each</label>
-        <select id="bench-budget">
-          <option value="5000" selected>5 s</option>
-          <option value="10000">10 s</option>
-          <option value="30000">30 s</option>
-        </select>
+  <!-- 02 ------------------------------------------------------------- -->
+  <section class="step">
+    <div class="step-head">
+      <div class="num">02</div>
+      <h2>Solve</h2>
+      <p>Longer budgets search more reductions and find slightly shorter solutions.</p>
+    </div>
+    <div class="step-body">
+      <div class="glass">
+        <div class="row" style="align-items:flex-end">
+          <button class="primary" id="solve">Solve</button>
+          <label class="field">
+            <span>Time budget</span>
+            <select id="budget">
+              <option value="5000">5 s</option>
+              <option value="10000" selected>10 s</option>
+              <option value="30000">30 s</option>
+              <option value="60000">60 s</option>
+            </select>
+          </label>
+        </div>
+        <div class="meter" id="meter" hidden><i></i></div>
+        <div class="status" id="status"><span class="spinner"></span>Loading solver…</div>
+        <ul class="problems" id="problems" hidden></ul>
       </div>
     </div>
-    <div class="status" id="bench-status"></div>
-    <div class="scroll">
-      <table id="bench-table" hidden>
-        <thead>
-          <tr>
-            <th>solver</th><th class="num">avg</th><th class="num">best</th>
-            <th class="num">worst</th><th class="num">avg time</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+  </section>
+
+  <!-- 03 ------------------------------------------------------------- -->
+  <section class="step" id="result-step" hidden>
+    <div class="step-head">
+      <div class="num">03</div>
+      <h2>Solution</h2>
+      <p>Play it back on the 3D cube, step through it, or click any move to jump there.</p>
     </div>
-  </div>
+    <div class="step-body">
+      <div class="glass player">
+        <div>
+          <div class="bigcount" id="bigcount">0<small>moves</small></div>
+          <span class="tag" id="verdict"></span>
+          <div class="moves" id="moves"></div>
+          <div class="scroll">
+            <table id="breakdown">
+              <thead><tr><th>Stage</th><th class="n">Moves</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="hint" id="rot-note" hidden>
+            The cube may finish with its colours rotated. A 4x4x4 has no fixed
+            centres, so that is fully solved.
+          </p>
+        </div>
+        <div class="viewer">
+          <div id="play3d"></div>
+          <input type="range" class="progress" id="progress" min="0" max="0" value="0" aria-label="Position in solution">
+          <div class="counter" id="counter">0 / 0</div>
+          <div class="transport">
+            <button class="icon" id="p-start" title="Start" aria-label="Start">⏮</button>
+            <button class="icon" id="p-back" title="Step back" aria-label="Step back">◀</button>
+            <button class="icon primary" id="p-play" title="Play" aria-label="Play" style="width:52px;height:52px;padding:0">▶</button>
+            <button class="icon" id="p-fwd" title="Step forward" aria-label="Step forward">▶|</button>
+            <button class="icon" id="p-end" title="End" aria-label="End">⏭</button>
+            <select id="p-speed" aria-label="Speed">
+              <option value="600">Slow</option>
+              <option value="320" selected>Normal</option>
+              <option value="140">Fast</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 ------------------------------------------------------------- -->
+  <section class="step">
+    <div class="step-head">
+      <div class="num">04</div>
+    </div>
+    <div class="step-body">
+      <div class="glass">
+        <details class="adv">
+          <summary>Advanced</summary>
+          <div class="adv-grid">
+            <div>
+              <p class="label">Load from a scramble</p>
+              <textarea id="scramble" spellcheck="false" placeholder="e.g. R2 L2 U' F2 Rw2 Fw2 R Uw2 …"></textarea>
+              <p class="hint">Outer turns U R F D L B and wide turns Uw Rw Fw Dw Lw Bw, each plain, 2 or '. Applied to a solved cube, then shown on the painter.</p>
+              <div class="row" style="margin-top:12px">
+                <button id="apply-scramble">Apply to painter</button>
+                <button id="random-scramble">Random WCA scramble</button>
+              </div>
+              <div class="status" id="scr-status"></div>
+            </div>
+            <div>
+              <p class="label">Benchmark against TPR</p>
+              <p class="hint" style="margin-top:0">Solves random states with both this solver and the stock TPR three-phase solver, and checks every solution.</p>
+              <div class="row" style="margin-top:12px;align-items:flex-end">
+                <button id="bench">Run benchmark</button>
+                <label class="field"><span>States</span>
+                  <select id="bench-n"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
+                </label>
+                <label class="field"><span>Budget</span>
+                  <select id="bench-budget"><option value="5000" selected>5 s</option><option value="10000">10 s</option><option value="30000">30 s</option></select>
+                </label>
+              </div>
+              <div class="status" id="bench-status"></div>
+              <div class="scroll">
+                <table id="bench-table" hidden>
+                  <thead><tr><th>Solver</th><th class="n">Avg</th><th class="n">Best</th><th class="n">Worst</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Revenge42 · GPL-3.0 · built on Chen Shuang's TPR-4x4x4-Solver and min2phase</span>
+    <span>Move count: outer block turn metric (wide and half turns count as one)</span>
+  </footer>
 </div>
+
+<script src="cube.js"></script>
+<script src="cube3d.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

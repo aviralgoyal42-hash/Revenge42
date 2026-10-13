@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aviralgoyal42-hash.github.io/Revenge42/sitemap.xml

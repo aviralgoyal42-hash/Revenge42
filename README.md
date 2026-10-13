@@ -209,7 +209,7 @@ every number here uses, including the baseline, so the comparison is direct.
 vendor/     csTimer sources, unmodified (GPL-3.0, cs0x7f)
 src/tpr444.js   fork of csTimer's scramble_444.js; changes marked [revenge42]
 src/engine.js   loads the browser scripts into a Node vm context for benchmarking
-web/        the browser app: index.html, app.js, worker.js
+web/        the browser app: index.html, app.js, worker.js, cube.js (sticker model), cube3d.js (3D view)
 bench/      correctness gate, benchmarks, configuration sweeps
 ```
 
